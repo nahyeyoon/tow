@@ -5,11 +5,11 @@ import pandas as pd
 st.title("2025년 5월 기준 연령별 인구 현황 분석")
 
 # 파일 업로드
-uploaded_file = st.file_uploader("202505_202505_연령별인구현황_월간.csv (EUC-KR 인코딩)", type=["csv"])
+#uploaded_file = st.file_uploader("202505_202505_연령별인구현황_월간.csv", (EUC-KR 인코딩)", type=["csv"])
 if uploaded_file is not None:
     try:
         # 데이터 불러오기
-        df = pd.read_csv(202505_202505_연령별인구현황_월간.csv, encoding='euc-kr')
+        #df = pd.read_csv("202505_202505_연령별인구현황_월간.csv", encoding='euc-kr')
 
         st.subheader("원본 데이터")
         st.dataframe(df)
