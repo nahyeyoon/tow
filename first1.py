@@ -9,7 +9,7 @@ uploaded_file = st.file_uploader("202505_202505_연령별인구현황_월간.csv
 if uploaded_file is not None:
     try:
         # 데이터 불러오기
-        df = pd.read_csv(uploaded_file, encoding='euc-kr')
+        df = pd.read_csv(202505_202505_연령별인구현황_월간.csv, encoding='euc-kr')
 
         st.subheader("원본 데이터")
         st.dataframe(df)
