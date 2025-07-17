@@ -153,9 +153,6 @@ age_only_df.sort_index(inplace=True)
 st.subheader("📄 원본 데이터 (일부)")
 st.dataframe(df.head(10))
 
-# 📊 선 그래프
-st.subheader("📈 연령별 인구 선 그래프 (상위 5개 행정구역)")
-st.line_chart(age_only_df)
 
 # 📋 전처리된 상위 5개 행정구역 데이터
 st.subheader("🏙️ 상위 5개 행정구역 인구 데이터")
