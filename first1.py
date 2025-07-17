@@ -159,42 +159,58 @@ st.subheader("🏙️ 상위 5개 행정구역 인구 데이터")
 st.dataframe(top5)
 import streamlit as st
 import pandas as pd
-import altair as alt
+import matplotlib.pyplot as plt
 
-st.set_page_config(page_title="행정동별 인구 및 세대 현황", page_icon="📊")
+st.set_page_config(page_title="행정동 인구 그래프", page_icon="🌸", layout="centered")
 
-st.title("📊 행정동별 주민등록 인구 및 세대 현황")
-st.markdown("행정동별 인구와 세대수를 비교해보세요!")
+st.title("🌸 행정동별 주민등록 인구 및 세대현황")
+st.markdown("#### 파일을 업로드하면 인구와 세대수를 시각화해드려요!")
 
-# 🔽 CSV 파일 업로드 또는 로딩
-file_path = '행정동_인구_세대현황.csv'
-df = pd.read_csv(file_path, encoding='euc-kr')  # 또는 utf-8
+# 파일 업로드
+uploaded_file = st.file_uploader("CSV 파일을 업로드하세요", type="csv")
 
-# 🔍 필요한 열만 추출 (열 이름은 실제 파일에 맞게 수정)
-df = df[['행정동', '총인구수', '세대수']]
-df['총인구수'] = df['총인구수'].astype(int)
-df['세대수'] = df['세대수'].astype(int)
+if uploaded_file:
+    try:
+        # 데이터 읽기
+        df = pd.read_csv(uploaded_file, encoding='euc-kr')
+        
+        st.subheader("🔍 원본 데이터 미리보기")
+        st.dataframe(df.head())
 
-# 🔼 상위 10개 동 (인구수 기준)
-top10 = df.sort_values(by='총인구수', ascending=False).head(10)
+        # 열 이름 자동 감지
+        col_candidates = list(df.columns)
 
-# 🎨 Altair 그래프
-st.subheader("👨‍👩‍👧‍👦 인구수 Top 10 행정동")
-bar_chart = alt.Chart(top10).transform_fold(
-    ['총인구수', '세대수'],
-    as_=['항목', '값']
-).mark_bar().encode(
-    x=alt.X('행정동:N', title='행정동'),
-    y=alt.Y('값:Q', title='수'),
-    color='항목:N',
-    tooltip=['행정동', '항목', '값']
-).properties(
-    width=600,
-    height=400
-)
+        with st.expander("열 이름 확인/선택"):
+            col_dong = st.selectbox("📌 행정동 열", col_candidates)
+            col_population = st.selectbox("👥 인구수 열", col_candidates)
+            col_households = st.selectbox("🏠 세대수 열", col_candidates)
 
-st.altair_chart(bar_chart)
+        # 숫자형 변환
+        df[col_population] = df[col_population].astype(str).str.replace(',', '').str.strip().astype(int)
+        df[col_households] = df[col_households].astype(str).str.replace(',', '').str.strip().astype(int)
 
-# 📄 전체 데이터 보기
-with st.expander("📄 전체 데이터 보기"):
-    st.dataframe(df)
+        # 정렬 및 상위 10개 추출
+        top10 = df[[col_dong, col_population, col_households]].sort_values(by=col_population, ascending=False).head(10)
+
+        # 시각화
+        st.subheader("🌷 행정동별 인구 및 세대수 (Top 10)")
+        fig, ax = plt.subplots(figsize=(10, 5))
+        bar_width = 0.4
+        x = range(len(top10))
+
+        ax.bar(x, top10[col_population], width=bar_width, label='인구수 👥', color='#FFB6C1')
+        ax.bar([i + bar_width for i in x], top10[col_households], width=bar_width, label='세대수 🏠', color='#FFC0CB')
+
+        ax.set_xticks([i + bar_width / 2 for i in x])
+        ax.set_xticklabels(top10[col_dong], rotation=45, ha='right')
+        ax.set_ylabel("명 / 세대")
+        ax.set_title("행정동별 인구 및 세대수 비교")
+        ax.legend()
+
+        st.pyplot(fig)
+
+    except Exception as e:
+        st.error(f"⚠️ 오류가 발생했어요: {e}")
+
+else:
+    st.info("⬆️ 왼쪽 사이드바에서 CSV 파일을 업로드해 주세요.")
