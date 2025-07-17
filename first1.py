@@ -8,7 +8,7 @@ st.set_page_config(page_title="🌸 인구수 지도", page_icon="🗺️", layo
 
 # 🐥 제목
 st.title("🌸 2025년 5월 기준 인구수 상위 5개 지역 지도")
-st.markdown("##### 👑 상위 5개 행정구역의 인구를 귀엽게 지도에 표시했어요!")
+st.markdown("##### 👑 상위 5개 행정구역의 인구를 지도에 표시했어요!")
 
 # 🐰 CSV 파일 불러오기
 file_path = "202505_202505_연령별인구현황_월간.csv"
