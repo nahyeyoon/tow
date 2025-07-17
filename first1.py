@@ -83,3 +83,29 @@ with st.expander("🌼 원본 데이터 (일부 보기)"):
 # 🧁 전처리된 데이터
 st.subheader("🌸 상위 5개 행정구역 인구 데이터 (전처리 완료)")
 st.dataframe(top5[['총인구수']])
+
+for region in top5.index:
+    if region in region_coords:
+        lat, lon = region_coords[region]
+        pop = top5.loc[region, '총인구수']
+
+        # 🎀 핑크색 원형 마커
+        folium.CircleMarker(
+            location=[lat, lon],
+            radius=15,
+            color='#FF69B4',
+            fill=True,
+            fill_color='#FFB6C1',
+            fill_opacity=0.4,
+            tooltip=folium.Tooltip(f"🌸 <b>{region}</b><br>👩‍👩‍👧‍👦 인구: <b>{pop:,}명</b>", sticky=True)
+        ).add_to(m)
+
+        # 🌷 인구 수 텍스트 표시 (조금 위쪽에)
+        folium.map.Marker(
+            [lat + 0.1, lon],
+            icon=folium.DivIcon(html=f"""
+                <div style="font-size: 13px; color: #FF1493; font-weight: bold; text-align: center;">
+                    👩‍👩‍👧‍👦 {pop:,}
+                </div>
+            """)
+        ).add_to(m)
