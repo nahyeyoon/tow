@@ -3,23 +3,27 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 
-# 제목
-st.title("2025년 5월 기준 인구수 상위 5개 지역 지도")
+# 🧸 페이지 꾸미기
+st.set_page_config(page_title="🌸 인구수 지도", page_icon="🗺️", layout="centered")
 
-# 데이터 불러오기
+# 🐥 제목
+st.title("🌸 2025년 5월 기준 인구수 상위 5개 지역 지도")
+st.markdown("##### 👑 상위 5개 행정구역의 인구를 귀엽게 지도에 표시했어요!")
+
+# 🐰 CSV 파일 불러오기
 file_path = "202505_202505_연령별인구현황_월간.csv"
 df = pd.read_csv(file_path, encoding='euc-kr')
 
-# 총인구수 숫자로 변환
+# 💖 총인구수 숫자형으로 변환
 df['총인구수'] = df['2025년05월_계_총인구수'].str.replace(",", "").astype(int)
 
-# 상위 5개 행정구역
+# 🐣 상위 5개 지역만 추출
 top5 = df.sort_values(by='총인구수', ascending=False).head(5).copy()
 
-# 행정구역명에서 괄호 제거 (예: '서울특별시  (1100000000)' → '서울특별시')
+# 🎀 괄호 안 숫자 제거: '서울특별시  (1100000000)' → '서울특별시'
 top5['행정구역'] = top5['행정구역'].str.replace(r'\s*\(.*\)', '', regex=True)
 
-# 위도 경도 매핑 (직접 지정)
+# 📍 좌표 직접 지정
 coords = {
     '경기도': (37.4138, 127.5183),
     '서울특별시': (37.5665, 126.9780),
@@ -28,23 +32,28 @@ coords = {
     '인천광역시': (37.4563, 126.7052),
 }
 
-# folium 지도 생성
+# 🗺️ 지도 생성
 m = folium.Map(location=[36.5, 127.8], zoom_start=7)
 
-# 핑크색 원형 마커 추가
+# 💕 핑크색 원형 마커 추가
 for _, row in top5.iterrows():
     region = row['행정구역']
+    pop = row['총인구수']
     if region in coords:
         lat, lon = coords[region]
         folium.CircleMarker(
             location=(lat, lon),
             radius=15,
-            color='pink',
+            color='#ff69b4',  # 핫핑크
             fill=True,
-            fill_color='pink',
-            fill_opacity=0.4,
-            tooltip=f"{region}<br>총인구수: {row['총인구수']:,}명"
+            fill_color='#ffb6c1',  # 연핑크
+            fill_opacity=0.5,
+            tooltip=folium.Tooltip(f"<b>{region}</b><br>🧑‍🤝‍🧑 총인구수: <b>{pop:,}명</b>", sticky=True)
         ).add_to(m)
 
-# 지도 표시
-st_folium(m, width=700, height=500)
+# 🖼️ 지도 출력
+st_folium(m, width=720, height=500)
+
+# 🧾 데이터 표시
+with st.expander("📊 원본 데이터 보기"):
+    st.dataframe(top5[['행정구역', '총인구수']], use_container_width=True)
