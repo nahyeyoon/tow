@@ -3,32 +3,20 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 
-# 페이지 설정
-st.set_page_config(page_title="인구 지도 보기", layout="centered")
-st.title("🌸 2025년 5월 업데이트 및 지도 시간 🌸")
+# 🌸 페이지 제목
+st.set_page_config(page_title="인구 지도", layout="centered")
+st.title("🌸 2025년 5월 상위 5개 지역 인구 지도 🌸")
 
-# 데이터 로드
-file_path = "202505_202505_\uc5f0\ub839\ubcc4\uc778\uad6c\ud604\ud669_\uc6d4\uac04.csv"
+# 📂 CSV 불러오기
+file_path = "202505_202505_연령별인구현황_월간.csv"
 df = pd.read_csv(file_path, encoding='euc-kr')
 
-# 전체 인구수 수집
-age_columns = [col for col in df.columns if col.startswith('2025\ub14405\uc6d4_\uacc4_') and '세' in col]
-total_col = '2025\ub14405\uc6d4_\uacc4_\ucd1d\uc778\uad6c\uc218'
+# 🧼 전처리
+df['총인구수'] = df['2025년05월_계_총인구수'].str.replace(',', '').astype(int)
+top5 = df.sort_values(by='총인구수', ascending=False).head(5).copy()
+top5['행정구역'] = top5['행정구역'].str.replace(r'\s*\(.*\)', '', regex=True)
 
-# 인구수 전처리
-age_labels = [col.replace('2025\ub14405\uc6d4_\uacc4_', '').replace('세', '').replace('100 \uc774\uc0c1', '100') for col in age_columns]
-df['총인구수'] = df[total_col].str.replace(',', '').astype(int)
-
-# 포함 데이터 만들기
-age_df = df[['행정구역'] + age_columns + [total_col]].copy()
-age_df.columns = ['행정구역'] + age_labels + ['총인구수']
-age_df['행정구역'] = age_df['행정구역'].str.replace(r'\s*\(.*\)', '', regex=True)
-
-# 상위 5개 행정구역
-top5 = age_df.sort_values(by='총인구수', ascending=False).head(5).copy()
-top5.set_index('행정구역', inplace=True)
-
-# 지도 정보
+# 📍 좌표 지정 (직접 입력)
 coords = {
     '경기도': (37.4138, 127.5183),
     '서울특별시': (37.5665, 126.9780),
@@ -37,39 +25,35 @@ coords = {
     '인천광역시': (37.4563, 126.7052),
 }
 
-# 평기적 인구 지도 만들기
+# 🗺️ 지도 생성
 m = folium.Map(location=[36.5, 127.8], zoom_start=7, tiles="CartoDB Positron")
 
-for region, row in top5.iterrows():
+for _, row in top5.iterrows():
+    region = row['행정구역']
     if region in coords:
         lat, lon = coords[region]
         pop = row['총인구수']
-
-        # 폴리얼 원 표시
-        folium.Circle(
+        
+        # 🎀 원형 마커
+        folium.CircleMarker(
             location=[lat, lon],
-            radius=pop / 50,  # 만든 크기 조정
+            radius=15,
             color='#FF69B4',
             fill=True,
             fill_color='#FFB6C1',
             fill_opacity=0.4,
-            tooltip=f"{region}: {pop:,}명"
+            tooltip=f"🌸 {region} - 👩‍👩‍👧‍👦 {pop:,}명"
         ).add_to(m)
-
-        # 인구수 표시
+        
+        # 👩‍👩‍👧‍👦 인구 수 텍스트 표시 (약간 위에)
         folium.map.Marker(
-            [lat + 0.1, lon],
+            [lat + 0.12, lon],
             icon=folium.DivIcon(html=f"""
-                <div style='font-size: 12px; color: #FF1493; text-align: center;'>
-                    👥 {pop:,}
+                <div style="font-size: 13px; color: #FF1493; font-weight: bold; text-align: center;">
+                    👩‍👩‍👧‍👦 {pop:,}
                 </div>
             """)
         ).add_to(m)
 
-# 지도 보이기
-st.subheader("🌸 상위 5개 행정구역 인구 지도 표시")
+# 🎨 지도 출력
 st_folium(m, width=700, height=500)
-
-# 원본 데이터 보이게 하기
-st.subheader("\ud83c\udf38 \uc6d0\ubcf8 \ub370\uc774\ud130 \ud45c\uc2dc")
-st.dataframe(df.head())
