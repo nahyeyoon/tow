@@ -157,3 +157,44 @@ st.dataframe(df.head(10))
 # 📋 전처리된 상위 5개 행정구역 데이터
 st.subheader("🏙️ 상위 5개 행정구역 인구 데이터")
 st.dataframe(top5)
+import streamlit as st
+import pandas as pd
+import altair as alt
+
+st.set_page_config(page_title="행정동별 인구 및 세대 현황", page_icon="📊")
+
+st.title("📊 행정동별 주민등록 인구 및 세대 현황")
+st.markdown("행정동별 인구와 세대수를 비교해보세요!")
+
+# 🔽 CSV 파일 업로드 또는 로딩
+file_path = '행정동_인구_세대현황.csv'
+df = pd.read_csv(file_path, encoding='euc-kr')  # 또는 utf-8
+
+# 🔍 필요한 열만 추출 (열 이름은 실제 파일에 맞게 수정)
+df = df[['행정동', '총인구수', '세대수']]
+df['총인구수'] = df['총인구수'].astype(int)
+df['세대수'] = df['세대수'].astype(int)
+
+# 🔼 상위 10개 동 (인구수 기준)
+top10 = df.sort_values(by='총인구수', ascending=False).head(10)
+
+# 🎨 Altair 그래프
+st.subheader("👨‍👩‍👧‍👦 인구수 Top 10 행정동")
+bar_chart = alt.Chart(top10).transform_fold(
+    ['총인구수', '세대수'],
+    as_=['항목', '값']
+).mark_bar().encode(
+    x=alt.X('행정동:N', title='행정동'),
+    y=alt.Y('값:Q', title='수'),
+    color='항목:N',
+    tooltip=['행정동', '항목', '값']
+).properties(
+    width=600,
+    height=400
+)
+
+st.altair_chart(bar_chart)
+
+# 📄 전체 데이터 보기
+with st.expander("📄 전체 데이터 보기"):
+    st.dataframe(df)
