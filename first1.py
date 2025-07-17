@@ -209,8 +209,7 @@ if uploaded_file:
 
         st.pyplot(fig)
 
-    except Exception as e:
-        st.error(f"⚠️ 오류가 발생했어요: {e}")
-
-else:
-    st.info("⬆️ 왼쪽 사이드바에서 CSV 파일을 업로드해 주세요.")
+yfinance
+plotly
+folium
+streamlit-folium
